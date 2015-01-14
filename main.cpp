@@ -390,6 +390,7 @@ void print_parameters(){
 }
 
 
+
 int main (int argc, char* argv[])
 {
 
@@ -413,7 +414,7 @@ int main (int argc, char* argv[])
 
  // take 10 shots
  char filename[256];
- int const nShots = 9
+ int const nShots = 1
 
 
  ;
@@ -452,10 +453,22 @@ int decalagey = 30;
   snprintf(filename, 256, "shot-%04d.nef", i);
   printf("Capturing to file %s\n", filename);
   print_parameters();
-  update_parameters(apertab[i+4],speedtab[24-i],isotab[i%3]);
+  //update_parameters(apertab[i+4],speedtab[24-i],isotab[i%3]);
   
-  //set_config_value_string(camera,"shutterspeed","1/320",context);
-  capture(filename);
+  set_config_value_string(camera,"whitebalance","1",context);
+  /*
+  int ret;
+  CameraWidget		*widget = NULL, *child = NULL;
+  CameraWidgetType	type;
+  gp_camera_get_config (camera, &widget, context);
+  _lookup_widget (widget, "shutterspeed", &child);
+  gp_widget_get_type (child, &type);
+  const int val = 2;
+  ret = gp_widget_set_value (child, &val);
+  std::cout << ret <<" " << GP_OK <<" " << std::endl;
+  gp_camera_set_config (camera, widget, context);
+  */
+  //capture(filename);
   print_parameters();
   img[i] = cvLoadImage(filename, CV_LOAD_IMAGE_UNCHANGED);
   /*if (img[i] == NULL)
