@@ -413,7 +413,7 @@ int main (int argc, char* argv[])
 
  // take 10 shots
  char filename[256];
- int const nShots = 4
+ int const nShots = 9
 
 
  ;
@@ -432,7 +432,8 @@ cv::Mat img[10];// = {NULL}; //= cv::imread("something.jpg");
 // Resize src so that is has the same size as img
 //cv::resize(src, src, img.size());
  
-int decalagex = 100;
+int decalagex = 30;
+int decalagey = 30;
  // do some capturing
 
 //const float val = 0.0;
@@ -451,7 +452,7 @@ int decalagex = 100;
   snprintf(filename, 256, "shot-%04d.nef", i);
   printf("Capturing to file %s\n", filename);
   print_parameters();
-  update_parameters(apertab[i+4],speedtab[i+15],isotab[i]);
+  update_parameters(apertab[i+4],speedtab[24-i],isotab[i%3]);
   
   //set_config_value_string(camera,"shutterspeed","1/320",context);
   capture(filename);
@@ -463,10 +464,11 @@ int decalagex = 100;
     return EXIT_FAILURE;
   }*/
   //cvResize(img[i],img[i], cvSize(320, 240));
-    cvNamedWindow (filename, CV_WINDOW_AUTOSIZE);
+  cvNamedWindow (filename, CV_WINDOW_AUTOSIZE);
   cv::resize(img[i], img[i], cvSize(320, 240));
-  cvMoveWindow(filename, decalagex, 20);
+  cvMoveWindow(filename, decalagex, decalagey);
   decalagex +=321;
+  if(i%3 == 0){ decalagey += 241; decalagex = 30; }
   cv::imshow(filename,img[i]);
   //cvShowImage (window_title, img[i]);
  }
