@@ -11,13 +11,9 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/video/video.hpp>
 
-
-//#include <Eigen/Dense>
-
-
 #include <gphoto2/gphoto2-camera.h>
 
-
+#include "params.h"
 
 //COmpilo : 
 //g++ -Wall -Wno-unused-local-typedefs main.cpp -lopencv_core -lopencv_highgui -lopencv_imgproc -lgphoto2 -lopencv_video -I ~/eigen  -o main
@@ -25,82 +21,6 @@
 
 Camera *camera;  
 GPContext *context; 
-
-float apertab[17] = { 
-	3.5,
-	4.0,
-	4.5,
-	5,
-	5.6,
-	6.3,
-	7.1,
-	8,
-	9,
-	10,
-	11,
-	13,
-	14,
-	16,
-	18,
-	20,
-	22};
-
-	int isotab[7] = {
-		100,
-		200,
-		400,
-		800,
-		1600,
-		3200,
-		6400
-	};
-
-
-std::string speedtab[44] = {
-"5",
-"4",
-"3.2",
-"2.5",
-"2",
-"1.6",
-"1.3",
-"1",
-"0.8",
-"0.6",
-"0.5",
-"0.4",
-"0.3",
-"1/4",
-"1/5",
-"1/6",
-"1/8",
-"1/10",
-"1/13",
-"1/15",
-"1/20",
-"1/25",
-"1/30",
-"1/40",
-"1/50",
-"1/60",
-"1/80",
-"1/100",
-"1/125",
-"1/160",
-"1/200",
-"1/250",
-"1/320",
-"1/400",
-"1/500",
-"1/640",
-"1/800",
-"1/1000",
-"1/1250",
-"1/1600",
-"1/2000",
-"1/2500",
-"1/3200",
-"1/4000"};
 
 
 static int
@@ -327,12 +247,10 @@ int capture (const char *filename) {
  return 0;
 }
 
-int update_parameters(float aperture, std::string shutterspeed, int iso){
+int update_parameters(float aperture, std::string shutterspeed, std::string iso){
 
 	char buffer[32];
-	char buffer2[32];
 	//char buffer3[32];
-	
 	//char * chaine;
 
 	//get_config_value_string(camera,"aperture",&chaine,context);
@@ -344,30 +262,29 @@ int update_parameters(float aperture, std::string shutterspeed, int iso){
   		std::cout << "Modification de aperture : "<< buffer<<std::endl;
   	//}
 
-  	//get_config_value_string(camera,"shutterspeed",&chaine,context);
-  	//if(*chaine != shutterspeed){
-
-	/*snprintf(buffer,32,"%d",shutterspeed_denom);
-	snprintf(buffer2,32,"%d",shutterspeed_num);
-	strcpy(str,buffer);
-	strcat(str,"/");
-	strcat(str,buffer2);*/
-	//strcpy(str,shutterspeed);
-	int shuttersize = shutterspeed.size();
-	char str[shuttersize];
-	for(int i = 0; i< shuttersize; ++i){
-		str[i] = shutterspeed[i];
+	int size_shutterspeed = shutterspeed.size();
+	char str_shutterspeed[size_shutterspeed];
+	for(int i = 0; i< size_shutterspeed; ++i){
+		str_shutterspeed[i] = shutterspeed[i];
 	}
-  	set_config_value_string(camera,"shutterspeed",str,context);
-  	std::cout << "Modification de shutterspeed : "<< str<<std::endl;
+	str_shutterspeed[size_shutterspeed] = '\0';
+
+  	set_config_value_string(camera,"shutterspeed",str_shutterspeed,context);
+  	std::cout << "Modification de shutterspeed : "<< str_shutterspeed <<std::endl;
   	//}
 
 
   	//get_config_value_string(camera,"iso",&chaine,context);
   	//if(*chaine != iso){
-	snprintf(buffer2,32,"%d",iso);
-  	set_config_value_string(camera,"iso",buffer2,context);
-  	std::cout << "Modification de iso : "<< buffer2<<std::endl;
+	int size_iso = iso.size();
+	char str_iso[size_iso];
+	for(int i = 0; i< size_iso; ++i){
+		str_iso[i] = iso[i];
+	}
+	str_iso[size_iso] = '\0';
+
+  	set_config_value_string(camera,"iso",str_iso,context);
+  	std::cout << "Modification de iso : "<< str_iso <<std::endl;
   	//}
 
 
@@ -385,6 +302,19 @@ void print_parameters(){
 
 	get_config_value_string(camera,"iso",&chaine,context);
 	std::cout<<"iso : " << chaine <<std::endl;
+
+	get_config_value_string(camera,"whitebalance",&chaine,context);
+	std::cout<<"whitebalance : " << chaine <<std::endl;
+
+	get_config_value_string(camera,"meteringmode",&chaine,context);
+	std::cout<<"meteringmode : " << chaine <<std::endl;
+
+	get_config_value_string(camera,"manualfocusdrive",&chaine,context);
+	std::cout<<"manualfocusdrive : " << chaine <<std::endl;
+
+	get_config_value_string(camera,"eoszoomposition",&chaine,context);
+	std::cout<<"eoszoomposition : " << chaine <<std::endl;
+
 
 
 }
@@ -414,10 +344,7 @@ int main (int argc, char* argv[])
 
  // take 10 shots
  char filename[256];
- int const nShots = 1
-
-
- ;
+ int const nShots = 1;
  int i;
 
 
@@ -449,40 +376,62 @@ int decalagey = 30;
 		}*/
 
 
+//gphoto2 --list-config
+
  for (i = 1; i <= nShots; i++) {
   snprintf(filename, 256, "shot-%04d.nef", i);
   printf("Capturing to file %s\n", filename);
-  print_parameters();
-  //update_parameters(apertab[i+4],speedtab[24-i],isotab[i%3]);
+  //print_parameters();
+  update_parameters(aperture_tab[i+4],shutterspeed_tab[24-i],iso_tab[0]);
+
+  set_config_value_string(camera,"whitebalance","Auto",context);
+  set_config_value_string(camera,"meteringmode","Center-weighted average",context);
+  set_config_value_string(camera,"focusmode","AI Focus",context);
+  set_config_value_string(camera,"eoszoom","1",context);
+  set_config_value_string(camera,"manualfocusdrive","Near 1",context);
+  set_config_value_string(camera,"eoszoomposition","5,5",context);
+  set_config_value_string(camera,"whitebalanceadjusta","15",context);
+  set_config_value_string(camera,"whitebalanceadjustb","9",context);
+  //
+  //set_config_value_string(camera,"afdistance ","Auto",context);
+  //set_config_value_string(camera,"exposurecompensation ","2",context);
+  //set_config_value_string(camera,"iso","Auto",context);
   
-  set_config_value_string(camera,"whitebalance","1",context);
-  /*
-  int ret;
-  CameraWidget		*widget = NULL, *child = NULL;
-  CameraWidgetType	type;
-  gp_camera_get_config (camera, &widget, context);
-  _lookup_widget (widget, "shutterspeed", &child);
-  gp_widget_get_type (child, &type);
-  const int val = 2;
-  ret = gp_widget_set_value (child, &val);
-  std::cout << ret <<" " << GP_OK <<" " << std::endl;
-  gp_camera_set_config (camera, widget, context);
-  */
-  //capture(filename);
+  
+
+
+
+/* system, ne fonctionne pas car le programme c++ a la main sur l'appareil
+	int i;
+  printf ("Checking if processor is available...");
+  if (system(NULL)) puts ("Ok");
+    else exit (EXIT_FAILURE);
+  std::cout << "Executing command DIR..." << std::endl;
+  i=system ("gphoto2 --set-config whitebalance=2");
+  printf ("The value returned was: %d.\n",i);
+*/
+
+  capture(filename);
   print_parameters();
   img[i] = cvLoadImage(filename, CV_LOAD_IMAGE_UNCHANGED);
+ 
+
   /*if (img[i] == NULL)
   {
     fprintf (stderr, "couldn't open image file: %s\n", argv[1]);
     return EXIT_FAILURE;
   }*/
   //cvResize(img[i],img[i], cvSize(320, 240));
+  
+    /* comments car pas de capture */
   cvNamedWindow (filename, CV_WINDOW_AUTOSIZE);
   cv::resize(img[i], img[i], cvSize(320, 240));
   cvMoveWindow(filename, decalagex, decalagey);
   decalagex +=321;
   if(i%3 == 0){ decalagey += 241; decalagex = 30; }
   cv::imshow(filename,img[i]);
+  
+
   //cvShowImage (window_title, img[i]);
  }
 
