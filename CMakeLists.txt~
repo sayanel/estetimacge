@@ -1,0 +1,16 @@
+cmake_minimum_required(VERSION 2.8)
+
+project (Estetimacge)
+
+set(EXECUTABLE_NAME esteticmage)
+
+
+## Compilation du programme
+add_library(estetimacge_lib src/capture.cpp src/parameters.cpp   src/config.cpp src/notifications.cpp src/widget.cpp) 
+
+## programme estetimacge qui link avec la librairie
+add_executable(esteticmage src/main.cpp)
+target_link_libraries(esteticmage opencv_core opencv_highgui opencv_imgproc opencv_video gphoto2 -I ~/eigen)
+target_link_libraries(esteticmagee estetimacge_lib)
+
+

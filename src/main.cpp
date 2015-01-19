@@ -13,19 +13,21 @@
 
 #include <gphoto2/gphoto2-camera.h>
 
-#include "params.h"
-#include "capture.hpp"
-#include "parameters.hpp"
-#include "notifications.hpp"
-#include "config.hpp"
-#include "widget.hpp"
+Camera *camera;  
+GPContext *context; 
+
+#include "include/params.h"
+#include "include/parameters.hpp"
+#include "include/capture.hpp"
+#include "include/notifications.hpp"
+#include "include/config.hpp"
+#include "include/widget.hpp"
 
 //COmpilo : 
 //g++ -Wall -Wno-unused-local-typedefs main.cpp -lopencv_core -lopencv_highgui -lopencv_imgproc -lgphoto2 -lopencv_video -I ~/eigen  -o main
 
 
-Camera *camera;  
-GPContext *context; 
+
 
 
 
@@ -35,7 +37,7 @@ int main (int argc, char* argv[])
 
 	//int retval;
     gp_camera_new (&camera);
- context = gp_context_new();
+    context = gp_context_new();
 
  // set callbacks for camera messages
  //gp_context_set_error_func(context, error_func, NULL);
@@ -90,17 +92,17 @@ int decalagey = 30;
  for (i = 1; i <= nShots; i++) {
   snprintf(filename, 256, "shot-%04d.nef", i);
   printf("Capturing to file %s\n", filename);
-  //print_parameters();
-  update_parameters(aperture_tab[i+4],shutterspeed_tab[24-i],iso_tab[0]);
+  print_parameters(camera, context);
+  update_parameters(camera, context, aperture_tab[i+3],shutterspeed_tab[24-i],iso_tab[0]);
 
-  set_config_value_string(camera,"whitebalance","Auto",context);
-  set_config_value_string(camera,"meteringmode","Center-weighted average",context);
-  set_config_value_string(camera,"focusmode","AI Focus",context);
-  set_config_value_string(camera,"eoszoom","1",context);
-  set_config_value_string(camera,"manualfocusdrive","Near 1",context);
-  set_config_value_string(camera,"eoszoomposition","5,5",context);
-  set_config_value_string(camera,"whitebalanceadjusta","15",context);
-  set_config_value_string(camera,"whitebalanceadjustb","9",context);
+  // set_config_value_string(camera,"whitebalance","Auto",context);
+  // set_config_value_string(camera,"meteringmode","Center-weighted average",context);
+  // set_config_value_string(camera,"focusmode","AI Focus",context);
+  // set_config_value_string(camera,"eoszoom","1",context);
+  // set_config_value_string(camera,"manualfocusdrive","Near 1",context);
+  // set_config_value_string(camera,"eoszoomposition","5,5",context);
+  // set_config_value_string(camera,"whitebalanceadjusta","15",context);
+  // set_config_value_string(camera,"whitebalanceadjustb","9",context);
   //
   //set_config_value_string(camera,"afdistance ","Auto",context);
   //set_config_value_string(camera,"exposurecompensation ","2",context);
@@ -120,8 +122,8 @@ int decalagey = 30;
   printf ("The value returned was: %d.\n",i);
 */
 
-  capture(filename);
-  print_parameters();
+  capture(camera, context, filename);
+  print_parameters(camera, context);
   img[i] = cvLoadImage(filename, CV_LOAD_IMAGE_UNCHANGED);
  
 

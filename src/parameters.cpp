@@ -1,13 +1,15 @@
-#include "parameters.hpp"
+#include "include/parameters.hpp"
+#include "include/config.hpp"
+#include <string.h>
 
-int update_parameters(float aperture, std::string shutterspeed, std::string iso){
+int update_parameters(Camera *camera, GPContext *context, float aperture, std::string shutterspeed, std::string iso){
 
 	char buffer[32];
 	//char buffer3[32];
 	//char * chaine;
-
+	
 	//get_config_value_string(camera,"aperture",&chaine,context);
-
+	std::cout << "****************************" << std::endl;
 	//if(*chaine != aperture){
 		if((float)aperture - (int)aperture != 0) snprintf(buffer,32,"%.1f",aperture);
 		else snprintf(buffer,32,"%.f",aperture);
@@ -41,12 +43,15 @@ int update_parameters(float aperture, std::string shutterspeed, std::string iso)
   	//}
 
 
+	std::cout << "****************************" << std::endl;
+	std::cout << "****************************" << std::endl << std::endl;
+
 	return 1;
 }
 
-void print_parameters(){
+void print_parameters(Camera *camera, GPContext *context){
 	char * chaine;
-	std::cout << "*************"<<std::endl;
+	std::cout << "****************************" << std::endl;
 	get_config_value_string(camera,"aperture",&chaine,context);
 	std::cout<<"Aperture = " << chaine <<std::endl;
 
@@ -69,5 +74,6 @@ void print_parameters(){
 	std::cout<<"eoszoomposition : " << chaine <<std::endl;
 
 
-
+	std::cout << "****************************" << std::endl;
+	std::cout << "****************************" << std::endl << std::endl;
 }

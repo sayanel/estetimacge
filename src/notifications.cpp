@@ -1,4 +1,4 @@
-#include "notifications.hpp"
+#include "include/notifications.hpp"
 
 void error_func (GPContext *context, const char *format, va_list args, void *data) {
  fprintf  (stderr, "*** Contexterror ***\n");

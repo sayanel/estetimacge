@@ -1,7 +1,8 @@
-#include "capture.hpp"
+#include "include/capture.hpp"
 
 
-int capture (const char *filename) {
+int capture (Camera *camera, GPContext *context, const char *filename) {
+
  int fd, retval;
  CameraFile *file;
  CameraFilePath camera_file_path;

@@ -1,8 +1,9 @@
-#include "config.hpp"
+#include "include/config.hpp"
+#include "include/widget.hpp"
+#include <string.h>
 
 
-static int
-get_config_value_string (Camera *camera, const char *key, char **str, GPContext *context) {
+int get_config_value_string (Camera *camera, const char *key, char **str, GPContext *context) {
 	CameraWidget		*widget = NULL, *child = NULL;
 	CameraWidgetType	type;
 	int			ret;
@@ -63,8 +64,7 @@ out:
  * Sample (for Canons eg):
  *   get_config_value_string (camera, "owner", &ownerstr, context);
  */
-static int
-set_config_value_string (Camera *camera, const char *key, const char *val, GPContext *context) {
+int set_config_value_string (Camera *camera, const char *key, const char *val, GPContext *context) {
 	CameraWidget		*widget = NULL, *child = NULL;
 	CameraWidgetType	type;
 	int			ret;

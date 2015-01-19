@@ -1,8 +1,7 @@
-#include "widget.hpp"
+#include "include/widget.hpp"
 
 
-static int
-_lookup_widget(CameraWidget*widget, const char *key, CameraWidget **child) {
+int _lookup_widget(CameraWidget*widget, const char *key, CameraWidget **child) {
 	int ret;
 	ret = gp_widget_get_child_by_name (widget, key, child);
 	if (ret < GP_OK)
