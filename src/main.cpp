@@ -90,7 +90,7 @@ int decalagey = 30;
 //gphoto2 --list-config
  
  for (i = 1; i <= nShots; i++) {
-  snprintf(filename, 256, "shot-%04d.nef", i);
+  snprintf(filename, 256, "shot-%04d.jpg", i);
   printf("Capturing to file %s\n", filename);
   print_parameters(camera, context);
   update_parameters(camera, context, aperture_tab[i+3],shutterspeed_tab[24-i],iso_tab[0]);
