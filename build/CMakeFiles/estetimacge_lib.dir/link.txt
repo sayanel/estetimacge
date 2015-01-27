@@ -1,0 +1,2 @@
+/usr/bin/ar cr libestetimacge_lib.a  CMakeFiles/estetimacge_lib.dir/src/capture.cpp.o CMakeFiles/estetimacge_lib.dir/src/parameters.cpp.o CMakeFiles/estetimacge_lib.dir/src/config.cpp.o CMakeFiles/estetimacge_lib.dir/src/notifications.cpp.o CMakeFiles/estetimacge_lib.dir/src/widget.cpp.o CMakeFiles/estetimacge_lib.dir/src/ioEigen.cpp.o CMakeFiles/estetimacge_lib.dir/src/pca.cpp.o
+/usr/bin/ranlib libestetimacge_lib.a

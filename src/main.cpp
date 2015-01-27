@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-//C shit for I/O 
 #include <fcntl.h>
 
 #include <iostream>
@@ -13,21 +12,20 @@
 
 #include <gphoto2/gphoto2-camera.h>
 
-Camera *camera;  
-GPContext *context; 
-
 #include "include/params.h"
 #include "include/parameters.hpp"
 #include "include/capture.hpp"
 #include "include/notifications.hpp"
 #include "include/config.hpp"
 #include "include/widget.hpp"
+#include "include/pca.hpp"
 
-//COmpilo : 
+//Compilo : 
 //g++ -Wall -Wno-unused-local-typedefs main.cpp -lopencv_core -lopencv_highgui -lopencv_imgproc -lgphoto2 -lopencv_video -I ~/eigen  -o main
 
 
-
+Camera *camera;  
+GPContext *context; 
 
 
 
@@ -36,6 +34,8 @@ int main (int argc, char* argv[])
 {
 
 	//int retval;
+    //pca("../src/matrix/database.mat");
+    //PCA pour test
     gp_camera_new (&camera);
     context = gp_context_new();
 
@@ -88,13 +88,13 @@ int decalagey = 30;
 
 
 //gphoto2 --list-config
-
+ 
  for (i = 1; i <= nShots; i++) {
   snprintf(filename, 256, "shot-%04d.nef", i);
   printf("Capturing to file %s\n", filename);
   print_parameters(camera, context);
   update_parameters(camera, context, aperture_tab[i+3],shutterspeed_tab[24-i],iso_tab[0]);
-
+  //set_config_value_string(camera,"imageformat","Small Normal JPEG",context);
   // set_config_value_string(camera,"whitebalance","Auto",context);
   // set_config_value_string(camera,"meteringmode","Center-weighted average",context);
   // set_config_value_string(camera,"focusmode","AI Focus",context);

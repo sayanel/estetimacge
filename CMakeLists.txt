@@ -6,10 +6,14 @@ set(EXECUTABLE_NAME esteticmage)
 
 
 ## Compilation du programme
-add_library(estetimacge_lib src/capture.cpp src/parameters.cpp   src/config.cpp src/notifications.cpp src/widget.cpp) 
+add_library(estetimacge_lib src/capture.cpp src/parameters.cpp   src/config.cpp src/notifications.cpp src/widget.cpp src/ioEigen.cpp src/pca.cpp) 
 
 ## programme estetimacge qui link avec la librairie
 add_executable(esteticmage src/main.cpp)
+
+##Include eigen 
+INCLUDE_DIRECTORIES ( "~/eigen" )
+
 target_link_libraries(esteticmage opencv_core opencv_highgui opencv_imgproc opencv_video gphoto2 -I ~/eigen)
 target_link_libraries(esteticmage estetimacge_lib)
 

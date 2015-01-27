@@ -1,0 +1,2 @@
+/home/zemlia/Bureau/estetimac/estetimacge/build/CMakeFiles/esteticmage.dir
+/home/zemlia/Bureau/estetimac/estetimacge/build/CMakeFiles/estetimacge_lib.dir
