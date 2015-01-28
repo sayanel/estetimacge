@@ -43,22 +43,28 @@ GPContext *context;
 
  /** @function main */
  int main( int argc, const char** argv ){
-    int nbContours, nbPers;
-    Size size(1200,600);
+    int nbContours, nbPers, isPortrait = 0;
+    
     Mat image = imread( argv[1], 1 );
 
-    nbPers = faceDetector(image);
+    nbPers = faceDetector(image, isPortrait);
     cout << "NbPersonnes = " << nbPers << endl;
-
-    nbContours = contourDetector(image);
+    if(isPortrait) cout << "PORTRAIT" << endl;
+    //nbContours = contourDetector(image);
     cout << "NbContours = " << nbContours << endl;
 
 
+
+
+
+    /*DISPLAY IMAGE*/
+    Size size(image.cols/2, image.rows/2);
     Mat rz_image;
     resize(image,rz_image,size);//resize image
     /// Create Window
     string source_window = "_Estetimacge_";
     namedWindow( source_window, CV_WINDOW_AUTOSIZE );
+    // imshow( source_window, image );
     imshow( source_window, rz_image );
 
 	//int retval;

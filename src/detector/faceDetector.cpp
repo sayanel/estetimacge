@@ -10,7 +10,7 @@
  // RNG rng(12345);
 
  /** @function main */
- int faceDetector(Mat & image)
+ int faceDetector(Mat & image, int & isPortrait)
  {
 
     //-- 1. Load the cascades
@@ -19,7 +19,7 @@
 
     int nbPersons = 0;
     if( !image.empty() ){ 
-      nbPersons = detectAndDisplayFace( image ); 
+      nbPersons = detectAndDisplayFace(image, isPortrait); 
     }
     else{
       std::cout << " --(!) No captured frame -- Break!" << std::endl; 
@@ -28,8 +28,24 @@
    return nbPersons;
  }
 
+
+
+
+void portraitOrNotPortraitThatIsTheQuestion(int & isPortrait, int rayon, int width, int height){
+    //cout << "center= " << center_x << " " << center_y<<  " et rayon= " << rayon << " w= " << width << " h= " << height << endl;
+
+    double aireImage = width * height;
+    double aireFace = 3.14 * rayon * rayon;
+    //cout << "aireImage: " << aireImage << " aireFace: " << aireFace << endl;  
+    if(aireFace > (aireImage/20)) isPortrait = 1;
+    else if(isPortrait != 1) isPortrait = 0;
+}
+
+
+
+
 /** @function detectAndDisplay */
-int detectAndDisplayFace(Mat & frame){
+int detectAndDisplayFace(Mat & frame, int & isPortrait){
 
   RNG rng(12345);
   vector<Rect> faces;
@@ -46,8 +62,8 @@ int detectAndDisplayFace(Mat & frame){
   {
     Point center( faces[i].x + faces[i].width*0.5, faces[i].y + faces[i].height*0.5 );
     ellipse( frame, center, Size( faces[i].width*0.5, faces[i].height*0.5), 0, 0, 360, Scalar( 0, 0, 255 ), 10, 8, 0 );
-
     Mat faceROI = frame_gray( faces[i] );
+    
     
 
     //-- In each face, detect eyes
@@ -59,6 +75,8 @@ int detectAndDisplayFace(Mat & frame){
        int radius = cvRound( (eyes[j].width + eyes[j].height)*0.25 );
        circle( frame, center, radius, Scalar( 0, 0, 255 ), 4, 8, 0 );
      }
+
+     if(eyes.size()  >0) portraitOrNotPortraitThatIsTheQuestion(isPortrait, faces[i].width/2, frame.cols, frame.rows);
   }
 
   //imshow( window_name, frame );
@@ -69,8 +87,8 @@ int detectAndDisplayFace(Mat & frame){
 
   if(nbFaces >= 4 && nbEyes > 5) return 4;
   else if(nbFaces == 1 && nbEyes > 0) return 1;
-  else if(nbFaces == 2 && nbEyes > 3) return 2;
-  else if(nbFaces == 3 && nbEyes > 5) return 3;
+  else if(nbFaces == 2 && nbEyes > 1) return 2;
+  else if(nbFaces == 3 && nbEyes > 1) return 3;
   else return 0;
   
  }

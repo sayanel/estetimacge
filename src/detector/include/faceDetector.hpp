@@ -18,8 +18,8 @@
 using namespace std;
 using namespace cv;
 
-
-int detectAndDisplayFace(Mat & frame);
-int faceDetector(Mat & image);
+void portraitOrNotPortraitThatIsTheQuestion(int & isPortrait, int rayon, int width, int height);
+int detectAndDisplayFace(Mat & frame, int & isPortrait);
+int faceDetector(Mat & image, int & isPortrait);
 
 
