@@ -10,7 +10,12 @@ add_library(estetimacge_lib src/capture.cpp src/parameters.cpp   src/config.cpp 
 
 ## programme estetimacge qui link avec la librairie
 add_executable(esteticmage src/main.cpp)
-target_link_libraries(esteticmage opencv_core opencv_highgui opencv_imgproc opencv_video gphoto2 -I ~/eigen)
-target_link_libraries(esteticmagee estetimacge_lib)
+
+find_library( SQLITE3_LIBRARY_RELEASE sqlite3 )
+
+target_link_libraries(esteticmage opencv_core opencv_calib3d opencv_imgproc opencv_video opencv_features2d opencv_highgui opencv_nonfree sqlite3 gphoto2 -I ~/eigen)
+
+
+target_link_libraries(esteticmage estetimacge_lib)
 
 
