@@ -54,7 +54,7 @@ GPContext *context;
     cout << "NbContours = " << nbContours << endl;
 
 
-
+ 
 
 
     /*DISPLAY IMAGE*/
