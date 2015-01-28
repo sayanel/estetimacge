@@ -15,9 +15,12 @@ list( APPEND ThirdParty_LIBS ${OpenCV_LIBS} )
     include_directories( ${OpenCV_INCLUDE_DIRS} )
 endif( OpenCV_FOUND )
 
+##Include eigen 
+INCLUDE_DIRECTORIES ( "~/eigen" )
 
 ## Compilation du programme
-add_library(estetimacge_lib src/capture.cpp src/parameters.cpp   src/config.cpp src/notifications.cpp src/widget.cpp src/detector/faceDetector.cpp src/detector/contourDetector.cpp) 
+add_library(estetimacge_lib src/capture.cpp src/parameters.cpp   src/config.cpp src/notifications.cpp src/widget.cpp src/ioEigen.cpp src/pca.cpp src/detector/faceDetector.cpp src/detector/contourDetector.cpp) 
+
 
 
 ## programme estetimacge qui link avec la librairie
@@ -32,7 +35,5 @@ target_link_libraries(estetimacge sqlite3 gphoto2 ${OpenCV_LIBS} -I ~/eigen)
 
 
 target_link_libraries(estetimacge estetimacge_lib)
-
-
 
 

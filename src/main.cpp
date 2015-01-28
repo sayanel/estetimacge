@@ -17,15 +17,14 @@
 
 #include "gphoto2/gphoto2-camera.h"
 
-Camera *camera;  
-GPContext *context; 
-
 #include "include/params.h"
 #include "include/parameters.hpp"
 #include "include/capture.hpp"
 #include "include/notifications.hpp"
 #include "include/config.hpp"
 #include "include/widget.hpp"
+#include "include/pca.hpp"
+
 
 #include "detector/include/faceDetector.hpp"
 #include "detector/include/contourDetector.hpp"
@@ -39,11 +38,11 @@ GPContext *context;
 using namespace cv;
 using namespace std;
 
-
+Camera *camera;  
+GPContext *context; 
 
  /** @function main */
- int main( int argc, const char** argv )
- {
+ int main( int argc, const char** argv ){
     int nbContours, nbPers;
     Size size(1200,600);
     Mat image = imread( argv[1], 1 );
@@ -62,10 +61,13 @@ using namespace std;
     namedWindow( source_window, CV_WINDOW_AUTOSIZE );
     imshow( source_window, rz_image );
 
+	//int retval;
+    //pca("../src/matrix/database.mat");
+    //PCA pour test
+    gp_camera_new (&camera);
+    context = gp_context_new();
 
     waitKey(0); 
     return 0;
  }
-
-
 
