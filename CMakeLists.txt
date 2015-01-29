@@ -12,14 +12,16 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 find_package( OpenCV REQUIRED )
 if( OpenCV_FOUND )
 list( APPEND ThirdParty_LIBS ${OpenCV_LIBS} )
-    include_directories( ${OpenCV_INCLUDE_DIRS} )
+include_directories( ${OpenCV_INCLUDE_DIRS} )
 endif( OpenCV_FOUND )
 
+
 ##Include eigen 
-INCLUDE_DIRECTORIES ( "~/eigen" )
+INCLUDE_DIRECTORIES ("~/eigen")
+##INCLUDE_DIRECTORIES ("~/OpenCV")
 
 ## Compilation du programme
-add_library(estetimacge_lib src/capture.cpp src/parameters.cpp   src/config.cpp src/notifications.cpp src/widget.cpp src/ioEigen.cpp src/pca.cpp src/detector/faceDetector.cpp src/detector/contourDetector.cpp) 
+add_library(estetimacge_lib src/capture.cpp src/parameters.cpp   src/config.cpp src/notifications.cpp src/widget.cpp src/ioEigen.cpp src/pca.cpp src/detector/faceDetector.cpp src/detector/contourDetector.cpp src/detector/landscapeDetector.cpp) 
 
 
 
@@ -27,6 +29,7 @@ add_library(estetimacge_lib src/capture.cpp src/parameters.cpp   src/config.cpp 
 add_executable(estetimacge src/main.cpp)
 
 find_library( SQLITE3_LIBRARY_RELEASE sqlite3 )
+
 
 
 #opencv_core opencv_calib3d opencv_imgproc opencv_video opencv_features2d opencv_highgui opencv_nonfree #opencv_objdetect
