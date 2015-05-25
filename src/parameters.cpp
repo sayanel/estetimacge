@@ -2,6 +2,9 @@
 #include "include/config.hpp"
 #include <string.h>
 
+using namespace std;
+
+
 int update_parameters(Camera *camera, GPContext *context, float aperture, std::string shutterspeed, std::string iso){
 
 	char buffer[32];
@@ -61,6 +64,7 @@ void print_parameters(Camera *camera, GPContext *context){
 	get_config_value_string(camera,"iso",&chaine,context);
 	std::cout<<"iso : " << chaine <<std::endl;
 
+	/*
 	get_config_value_string(camera,"whitebalance",&chaine,context);
 	std::cout<<"whitebalance : " << chaine <<std::endl;
 
@@ -72,8 +76,9 @@ void print_parameters(Camera *camera, GPContext *context){
 
 	get_config_value_string(camera,"eoszoomposition",&chaine,context);
 	std::cout<<"eoszoomposition : " << chaine <<std::endl;
-
+	*/
 
 	std::cout << "****************************" << std::endl;
 	std::cout << "****************************" << std::endl << std::endl;
 }
+

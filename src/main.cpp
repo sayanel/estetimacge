@@ -5,6 +5,7 @@
 #include <iostream>
 #include <iomanip>
 #include <string>
+#include <vector>
 
 //#include "opencv/highgui.h"
 #include "opencv2/core/core.hpp"
@@ -24,11 +25,9 @@
 #include "include/config.hpp"
 #include "include/widget.hpp"
 #include "include/pca.hpp"
-
-
-#include "detector/include/faceDetector.hpp"
-#include "detector/include/contourDetector.hpp"
-//#include "detector/include/landscapeDetector.hpp"
+#include "include/analyse.hpp"
+#include "include/parametersToIndex.hpp"
+#include "include/filter.hpp"
 
 #include <sqlite3.h> 
 
@@ -42,248 +41,149 @@ using namespace std;
 Camera *camera;  
 GPContext *context; 
 
+
+
+void displayImages(int i, char * filename, Mat inputMat, int & decalagex, int & decalagey){
+
+    int width = 400; 
+    int height = 200;
+
+    //int width = 160;
+    //int height = 120;
+
+    cvNamedWindow (filename, CV_WINDOW_AUTOSIZE);
+    resize(inputMat, inputMat, cvSize(width, height));
+    cvMoveWindow(filename, decalagex, decalagey);
+    decalagex += width + 50;
+    //if(i%2 == 0 && i != 0 && i!= 4){ decalagey += height + 75; decalagex = 30; }
+    if(i == 1 || i == 3){ decalagey += height + 25; decalagex = 10; }
+    imshow(filename, inputMat);
+
+}
+
  /** @function main */
+
  int main( int argc, const char** argv ){
-    int nbContours, nbPers, isPortrait = 0;
-    
-    /*Mat image = imread( argv[1], 1 );
-
-    nbPers = faceDetector(image, isPortrait);
-    cout << "NbPersonnes = " << nbPers << endl;
-    if(isPortrait) cout << "PORTRAIT" << endl;
-    //nbContours = contourDetector(image);
-    //cout << "NbContours = " << nbContours << endl;
-
-    //detectAndDisplayLandscape(image);
-
  
+    cout << "*** ESTETIMAGE ***" << endl;
 
+    //lecture de l'image
+    //src = imread( argv[1], 1 );
 
-
-    Size size(image.cols/2, image.rows/2);
-    Mat rz_image;
-    resize(image,rz_image,size);//resize image
-    /// Create Window
-    string source_window = "_Estetimacge_";
-    namedWindow( source_window, CV_WINDOW_AUTOSIZE );
-    imshow( source_window, image );
-    //imshow( source_window, rz_image );
-
-	//int retval;
-    //pca("../src/matrix/database.mat");
-    //PCA pour test
-
-    */
-
-
+    //init
+	    //nbContours, isPortrait, nbfaces, dominant_color, global_hue, global_saturation, global_lightness, 
+	    //var_h, var_s, var_v, mean_red, mean_green, mean_blue, var_red, var_green, var_blue
+    VectorXd xx(16);
+    Mat src;
+    vector<Parameters> best_params;
+    vector<int> aperture_best_index;
+    vector<int> shutterspeed_best_index;
+    vector<int> iso_best_index;
+    char filename[256];
     gp_camera_new (&camera);
     context = gp_context_new();
 
-    printf("Camera init. Can take more than 10 seconds depending on the "
-  "memory card's contents (remove card from camera to speed up).\n");
- int ret = gp_camera_init(camera, context);
- if (ret < GP_OK) {
-  printf("No camera auto detected.\n");
-  gp_camera_free(camera);
-  return 1;
- }
+    int ret = gp_camera_init(camera, context);
+    if (ret < GP_OK) {
+      printf("L'appareil photo n'est pas détecté, essayez de démonter le lanceur dans votre barre de tâches ou de retirer la carte mémoire de l'appareil photo.\n");
+      gp_camera_free(camera);
+      return 1;
+     }
 
- // take 10 shots
- char filename[256];
- int const nShots = 1;
- int nShotsDB = 0;
- int i;
+    //capture de la première image
+    set_config_value_string(camera,"whitebalance","Auto",context);
+    //Si la ligne du dessous est commentée la 1ère photo sera prise avec les paramètres actuels de l'appareil sinon vous pouvez choisir des paramètres généraux ici:
+    //update_parameters(camera, context, aperture_tab[4], shutterspeed_tab[26], iso_tab[1]);
+    capture(camera, context, filename); 
+    src = cvLoadImage(filename, CV_LOAD_IMAGE_UNCHANGED);
+    resize(src, src, cvSize(640, 480));
+    snprintf(filename, 256, "firstshotauto");
+    //imshow(filename, src);
 
-cv::Mat img[10];
+    Mat cpy_src = src;
 
-int decalagex = 30;
-int decalagey = 30;
+    //construction du vecteur comportant toute l'analyse de notre image
+    analyseImageToBuildVector(src, xx);
+    
+    //comparaison de ce vecteur avec la matrice pour récupérer les correspondances
+    getMatchesWitchPCA(xx, best_params);
 
- for (i = 1; i <= nShots; i++) {
-  snprintf(filename, 256, "shot-%04d.jpg", i);
-  printf("Capturing to file %s\n", filename);
-  print_parameters(camera, context);
-  update_parameters(camera, context, aperture_tab[2],shutterspeed_tab[10],iso_tab[0]);
+    //convert les valeurs de best_params en index des tableaux aperture_tab, shutterspeed_tab et iso_tab
+    convertBestParamsToIndex(best_params, aperture_best_index, shutterspeed_best_index, iso_best_index);
 
-  // set_config_value_string(camera,"whitebalance","Auto",context);
-  // set_config_value_string(camera,"meteringmode","Center-weighted average",context);
-  // set_config_value_string(camera,"focusmode","AI Focus",context);
-  // set_config_value_string(camera,"eoszoom","1",context);
-  // set_config_value_string(camera,"manualfocusdrive","Near 1",context);
-  // set_config_value_string(camera,"eoszoomposition","5,5",context);
-  // set_config_value_string(camera,"whitebalanceadjusta","15",context);
-  // set_config_value_string(camera,"whitebalanceadjustb","9",context);
-  //
-  //set_config_value_string(camera,"afdistance ","Auto",context);
-  //set_config_value_string(camera,"exposurecompensation ","2",context);
-  //set_config_value_string(camera,"iso","Auto",context);
-  
-  
-  capture(camera, context, filename);
-  print_parameters(camera, context);
-  img[i] = cvLoadImage(filename, CV_LOAD_IMAGE_UNCHANGED);
- 
-    /* comments car pas de capture */
+    //photos
 
-  cv::resize(img[i], img[i], cvSize(640, 480));
-  //DETECTON DE PORTRAIT FORCEE !
-  //Mat image = imread( argv[1], 1 );
-  nbPers = faceDetector(img[i], isPortrait);
-  //nbPers = faceDetector(img[i], isPortrait);
-  cout << "NbPersonnes = " << nbPers << endl;
-  if(isPortrait) { 
-    cout << "PORTRAIT" << endl;
-    nShotsDB = 6;
-
-  }
-  //nbContours = contourDetector(img[i]);
-  cout << "NbContours = " << nbContours << endl;
- 
-  cvNamedWindow (filename, CV_WINDOW_AUTOSIZE);
-  cv::resize(img[i], img[i], cvSize(320, 240));
-  cvMoveWindow(filename, decalagex, decalagey);
-  decalagex +=321;
-  if(i%3 == 0){ decalagey += 241; decalagex = 30; }
-  
-  //Mat image = imread( filename, 1 );
-  
-  
-
-  cv::imshow(filename, img[i]);
+    int const nShots = 4;
+    int i;
+    Mat img[10];
+    int decalagex = 30;
+    int decalagey = 30;
 
 
+    for (i = 0; i < nShots; i++) {
+        snprintf(filename, 256, "shot-%04d.jpg", i);
+        printf("Capturing to file %s\n", filename);
+        //print_parameters(camera, context);
 
-  //cvShowImage (filename, img[i]);
- }
+        int ape_i = aperture_best_index[i];
+        int shu_i = shutterspeed_best_index[i];
+        int iso_i = iso_best_index[i];
+        //iso_i = 0; //auto
+      
+        if(i==2) set_config_value_string(camera,"whitebalance","Tungsten",context);
+        if(i==3) set_config_value_string(camera,"whitebalance","Daylight",context);
+        update_parameters(camera, context, aperture_tab[ape_i], shutterspeed_tab[shu_i], iso_tab[iso_i]);
 
+        capture(camera, context, filename);
 
-// DEUXIEME PRISE DE VUE APRES DETECTION
+        img[i] = cvLoadImage(filename, CV_LOAD_IMAGE_UNCHANGED);
+      
+        displayImages(i, filename, img[i], decalagex, decalagey);
 
+        
+     }
 
+     //white balance 
+     update_parameters(camera, context, aperture_tab[7], shutterspeed_tab[28], iso_tab[1]);
+     set_config_value_string(camera,"whitebalance","Shadow",context);
+     snprintf(filename, 256, "whitebalance");
+     capture(camera, context, filename);
+     img[4] = cvLoadImage(filename, CV_LOAD_IMAGE_UNCHANGED);
+     displayImages(4, filename, img[4], decalagex, decalagey);
 
-for (i = 1; i <= nShotsDB; i++) {
-  snprintf(filename, 256, "shot-%04d.jpg", i);
-  std::cout << "__________________________________________________" << std::endl;
-  print_parameters(camera, context);
-  //update_parameters(camera, context, aperture_tab[i*3],shutterspeed_tab[20-i],iso_tab[0]);
-  std::cout << "Initialisation ..." << std::endl;
-  switch(i){
+     //filtres
+     Mat imgWithFilter;
+      //img[6] = cartoonMatConversion(img[0]);
+      img[5] = softFocusConversion(img[0]); //cool
+     // imgWithFilter =  grayMatConversion(img[0]);
+     // imgWithFilter =  yuvMatConversion(img[0]);
+     // imgWithFilter =  inverseMatConversion(img[0]);
+     // imgWithFilter =  sepiaConversion(img[0]);
+     // imgWithFilter =  sketchConversion(img[0]);
+     // imgWithFilter =  pencilSketchConversion(img[0]);
+     // imgWithFilter =  retroEffectConversion(img[0]);
+     // imgWithFilter =  filmGrainConversion(img[0]);
+     // imgWithFilter =  pinholeCameraConversion(img[0]);
 
-    case 1:
-        std::cout << "Initialisation premiere photo" << std::endl;
-        update_parameters(camera, context, aperture_tab[2],shutterspeed_tab[27],iso_tab[0]);
-        set_config_value_string(camera,"whitebalance", whitebalance_tab[0],context);
-        //set_config_value_string(camera,"aperture", aperture_tab[2],context);
-        //set_config_value_string(camera,"shutterspeed", shutterspeed_tab[27],context);
-        break;
-    case 2:
-        std::cout << "Initialisation 2eme photo" << std::endl;
-        update_parameters(camera, context, aperture_tab[4],shutterspeed_tab[22],iso_tab[0]);
-        set_config_value_string(camera,"whitebalance", whitebalance_tab[1],context);
-        //set_config_value_string(camera,"aperture", aperture_tab[4],context);
-        //set_config_value_string(camera,"shutterspeed", shutterspeed_tab[22],context);
-        break;
-    case 3:
-        std::cout << "Initialisation 3eme photo" << std::endl;
-        update_parameters(camera, context, aperture_tab[5],shutterspeed_tab[20],iso_tab[0]);
-        set_config_value_string(camera,"whitebalance", whitebalance_tab[0],context);
-        //set_config_value_string(camera,"aperture", aperture_tab[5],context);
-        //set_config_value_string(camera,"shutterspeed", shutterspeed_tab[20],context);
-        break;
-    case 4:
-        std::cout << "Initialisation 4eme photo" << std::endl;
-        update_parameters(camera, context, aperture_tab[10],shutterspeed_tab[16],iso_tab[0]);
-        set_config_value_string(camera,"whitebalance", whitebalance_tab[3],context);
-        //set_config_value_string(camera,"aperture", aperture_tab[10],context);
-        //set_config_value_string(camera,"shutterspeed", shutterspeed_tab[16],context);
-        break;
-    case 5:
-        std::cout << "Initialisation 5eme photo" << std::endl;
-        update_parameters(camera, context, aperture_tab[13],shutterspeed_tab[12],iso_tab[0]);
-        set_config_value_string(camera,"whitebalance", whitebalance_tab[0],context);
-        //set_config_value_string(camera,"aperture", aperture_tab[13],context);
-        //set_config_value_string(camera,"shutterspeed", shutterspeed_tab[12],context);
-        break;
-    case 6:
-        std::cout << "Initialisation 6eme photo" << std::endl;
-        update_parameters(camera, context, aperture_tab[16],shutterspeed_tab[6],iso_tab[0]);
-        set_config_value_string(camera,"whitebalance", whitebalance_tab[5],context);
-        //set_config_value_string(camera,"aperture", aperture_tab[16],context);
-        //set_config_value_string(camera,"shutterspeed", shutterspeed_tab[6],context);
-        break;
+      //displayImages(6, filename, img[6], decalagex, decalagey);
 
-
-    default:
-        break;
-  }
-
-  //set_config_value_string(camera,"whitebalance", whitebalance_tab[i],context);
-  //set_config_value_string(camera,"aperture", whitebalance_tab[i],context);
-  //std::cout << "modif FOCUS" << std::endl;
-  //set_config_value_string(camera,"manualfocusdrive", manualfocusdrive_tab[i+2],context);
-
-  //set_config_value_string(camera,"whitebalance","Auto",context);
-  // set_config_value_string(camera,"meteringmode","Center-weighted average",context);
-  // set_config_value_string(camera,"focusmode","AI Focus",context);
-  // set_config_value_string(camera,"eoszoom","1",context);
-  // set_config_value_string(camera,"manualfocusdrive","Near 1",context);
-  //set_config_value_string(camera,"eoszoomposition","5,5",context);
-  // set_config_value_string(camera,"whitebalanceadjusta","15",context);
-  // set_config_value_string(camera,"whitebalanceadjustb","9",context);
-  //
-  //set_config_value_string(camera,"afdistance ","Auto",context);
-  //set_config_value_string(camera,"exposurecompensation ","2",context);
-  //set_config_value_string(camera,"iso","Auto",context);
-  
-  
-  capture(camera, context, filename);
-  printf("Capturing to file %s\n", filename);
-  print_parameters(camera, context);
-  img[i] = cvLoadImage(filename, CV_LOAD_IMAGE_UNCHANGED);
- 
-
-  cvNamedWindow (filename, CV_WINDOW_AUTOSIZE);
-  cv::resize(img[i], img[i], cvSize(320, 240));
-  cvMoveWindow(filename, decalagex, decalagey);
-  decalagex +=321;
-  if(i%3 == 0){ decalagey += 241; decalagex = 30; }
-  
-  //Mat image = imread( filename, 1 );
-  
-  
-
-  cv::imshow(filename, img[i]);
-
-
-
-  //cvShowImage (filename, img[i]);
- }
-
- // FIN DEUXIEME PRISE DE VUE
+      snprintf(filename, 256, "soft focus filter");
+      displayImages(5, filename, img[5], decalagex, decalagey);
 
 
 
 
- // close camera
- gp_camera_unref(camera);
- gp_context_unref(context);
+     // close camera et release les matrices images
+     gp_camera_unref(camera);
+     gp_context_unref(context);
 
-//END OF GPHOTO PART
- //STARTING OPENCV
+      cvWaitKey(0);
+      cvDestroyAllWindows();
+      for(i = 0; i < nShots; i++){
+        img[i].release();
+      }
 
-  
 
-  
-  
-  
-  cvWaitKey(0);
-  cvDestroyAllWindows();
-  for(i = 0; i < nShots; i++){
-    img[i].release();
-    //cvReleaseImage(&img[i]);
-
-    waitKey(0); 
-    return 0;
- }
-
+  return 0;
 }
+

@@ -3,8 +3,8 @@
 
 
  /** Global variables */
- String face_cascade_name = "../estetimacge/src/xml/haarcascade_frontalface_alt.xml";
- String eyes_cascade_name = "../estetimacge/src/xml/haarcascade_eye_tree_eyeglasses.xml";
+ String face_cascade_name = "xml/haarcascade_frontalface_alt.xml";
+ String eyes_cascade_name = "xml/haarcascade_eye_tree_eyeglasses.xml";
  CascadeClassifier face_cascade;
  CascadeClassifier eyes_cascade;
  // RNG rng(12345);
@@ -83,7 +83,7 @@ int detectAndDisplayFace(Mat & frame, int & isPortrait){
   
   int nbFaces = faces.size();
   int nbEyes = eyes.size();
-  int nbPersons;
+  //int nbPersons;
 
   if(nbFaces >= 4 && nbEyes > 0) return 4;
   else if(nbFaces == 1 && nbEyes > 0) return 1;

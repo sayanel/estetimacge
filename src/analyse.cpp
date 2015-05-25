@@ -1,48 +1,9 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <iostream>
-#include <cassert>
-#include <cstring>
-#include <vector>
-#include <ctime>
-#include <fstream>
-#include <math.h>
-#include <fcntl.h>
-
-#include "opencv2/core/core.hpp"
-#include "opencv2/imgproc/imgproc.hpp"
-#include "opencv2/video/video.hpp"
-#include "opencv2/features2d/features2d.hpp"
-#include "opencv2/highgui/highgui.hpp"
-#include "opencv2/nonfree/nonfree.hpp"
-#include "opencv2/objdetect/objdetect.hpp"
-
-//#include <Eigen/Dense>
-#include "ImageRGB.hpp"
-#include "ioJPG.hpp"
-#include "exif.h"
-
-#include "photo.hpp"
-
-#include "detector/include/faceDetector.hpp"
-#include "detector/include/contourDetector.hpp"
-
-#include <sqlite3.h> 
-#include <jpeglib.h>
+#include "include/analyse.hpp"
 
 //using namespace kn;
 using namespace cv;
 using namespace std;
 
-
-static int callback(void *NotUsed, int argc, char **argv, char **azColName){
-   int i;
-   for(i=0; i<argc; i++){
-      printf("%s = %s\n", azColName[i], argv[i] ? argv[i] : "NULL");
-   }
-   printf("\n");
-   return 0;
-}
 
 int getPixelColorType(int H, int S, int V){
         String color;
@@ -135,8 +96,8 @@ int hsvrgb(Mat src, int & icolor, int & h, int & s, int & v, int & r, int & g, i
   }
 
   /// Display
-  namedWindow("calcHist Demo", CV_WINDOW_AUTOSIZE );
-  imshow("calcHist Demo", histImage );
+  //namedWindow("calcHist Demo", CV_WINDOW_AUTOSIZE );
+  //imshow("calcHist Demo", histImage );
 
 
   Mat hsv;
@@ -225,64 +186,15 @@ void calculatevarianceRGBHSV(Mat & src, int mean_r, int mean_g, int mean_b, int 
 }
 
 
-void loadImages(const int argc, char **argv, std::string & sql, sqlite3 *db){
+int analyseImageToBuildVector(Mat src, VectorXd & xx){
 
-  for(int i=1; i<argc; ++i){
-     
-      //load the image
-      //std::cout << "loading '" << argv[i] << "' ...";
-      Mat src = imread( argv[i], 1 );
-
-      //std::cout << " done" << std::endl;
-
-      //************ EXIF ****************************************//
-      EXIFInfo exifReader;
-      int parseSuccess = exifReader.parseFrom(fileToString(argv[i]));
-      if(parseSuccess != PARSE_EXIF_SUCCESS){
-        //exifParsingError(parseSuccess);
-        //exit(0);
-        std::cout << "exif parsing error : PARSE_EXIF_ERROR_NO_EXIF" << std::endl;
-       
-      }
-      else if(exifReader.ISOSpeedRatings == 0 && exifReader.FNumber == 0 && exifReader.ExposureTime == 0){
-        std::cout << "exif parsing error : ALL EXIF == 0" << std::endl;
-      }
-      else{ 
-        /*
-        std::cout << " ImageDescription : " << exifReader.ImageDescription << std::endl;
-        std::cout << " wxh : " << exifReader.ImageWidth << " x " << exifReader.ImageHeight << std::endl;
-        std::cout << " exposure : " << exifReader.ExposureTime << " s" << std::endl;
-        std::cout << " flash : " << ((exifReader.Flash==0)?"no":"yes") << std::endl;
-        std::cout << " camera : " << exifReader.Model << std::endl;
-        std::cout << " ISO : " << exifReader.ISOSpeedRatings << std::endl;
-        std::cout << " apperture : " << exifReader.FNumber << std::endl;
-        std::cout << " MeteringMode : " << exifReader.MeteringMode << std::endl;
-        std::cout << " FocusDistance: " << exifReader.SubjectDistance << " m" << std::endl;
-        std::cout << std::endl;
-        */      
-
-
-      //************ EXIF DATA ***********************************//
-      std::ostringstream ss_iso;
-      ss_iso << exifReader.ISOSpeedRatings;
-
-      std::stringstream ss_aperture;
-      ss_aperture << exifReader.FNumber;
-
-      std::ostringstream ss_shutterspeed;
-      ss_shutterspeed << exifReader.ExposureTime;
-
-      std::ostringstream ss_focus;
-      ss_focus << exifReader.SubjectDistance;
-
-
-      //************ H S V & R G B ********************************//
+  
+        //************ H S V & R G B ********************************//
       int icolor = 0, h = 0, s = 0, v = 0, r = 0, g = 0, b = 0, var_r = 0, var_g = 0, var_b = 0, var_h = 0, var_s = 0, var_v = 0;
       hsvrgb(src, icolor, h, s, v, r, g, b);
 
-      //************ VRIANCE **************************************//
+      //************ VARIANCE **************************************//
       calculatevarianceRGBHSV(src, r, g, b, var_r, var_g, var_b, h, s, v, var_h, var_s, var_v);
-
 
       //************ CONTOURS *************************************//
       int isPortrait = 0; int nbPers = 0;
@@ -292,16 +204,10 @@ void loadImages(const int argc, char **argv, std::string & sql, sqlite3 *db){
       int nbContours = 0;
       detectContour(src, nbContours);
 
-      
 
       cout << "***********************************" << endl;
       cout << "***********************************" << endl;
       cout << "***********************************" << endl;
-      cout << "path: " << argv[i] << endl;
-      cout << "ss_iso: " << ss_iso.str() << endl;
-      cout << "ss_shutterspeed: " << ss_shutterspeed.str() << endl;
-      cout << "ss_aperture: " << ss_aperture.str() << endl;
-      cout << "ss_focus: " << ss_focus.str() << endl;
       cout << "global color: " << icolor << endl;
       cout << "global hue: " << h << " var: " << var_h << endl;
       cout << "global saturation: " << s <<" var: " << var_s <<  endl;
@@ -315,132 +221,12 @@ void loadImages(const int argc, char **argv, std::string & sql, sqlite3 *db){
       cout << "***********************************" << endl;
       cout << "***********************************" << endl;
       cout << "***********************************" << endl;
-      
-      std::ostringstream oss_nbContours, oss_isPortrait, oss_nbPers, oss_icolor, oss_h, oss_s, oss_v, oss_r, oss_g, oss_b, oss_var_r, oss_var_g, oss_var_b, oss_var_h, oss_var_s, oss_var_v;
-
-      sql += "INSERT INTO photo_param (path,shutterspeed,aperture,iso,focus, nbContours, isPortrait, nbfaces, dominant_color, global_hue, global_saturation, global_lightness, mean_red, mean_green, mean_blue, var_red, var_green, var_blue, var_h, var_s, var_v) VALUES ('";
-        sql += argv[i];
-        sql += "' , ";
-        sql += ss_shutterspeed.str();
-        sql += " , ";
-        sql += ss_aperture.str();
-        sql += " , ";
-        sql += ss_iso.str();
-        sql += " , ";
-        sql += ss_focus.str();
-        sql += ", ";
-          oss_nbContours << nbContours;
-        sql += oss_nbContours.str();
-        sql += ", ";
-          oss_isPortrait << isPortrait;
-        sql += oss_isPortrait.str();
-        sql += ", ";
-          oss_nbPers << nbPers;
-        sql += oss_nbPers.str();
-        sql += ", ";
-          oss_icolor << icolor;
-        sql += oss_icolor.str();
-        sql += ", ";
-          oss_h << h;
-        sql += oss_h.str();
-        sql += ", ";
-          oss_s << s;
-        sql += oss_s.str();
-        sql += ", ";
-          oss_v << v;
-        sql += oss_v.str();
-        sql += ", ";
-          oss_r<< r;
-        sql += oss_r.str();
-        sql += ", ";
-          oss_g << g;
-        sql += oss_g.str();
-        sql += ", ";
-          oss_b << b;
-        sql += oss_b.str();
-        sql += ", ";
-          oss_var_r << var_r;
-        sql += oss_var_r.str();
-        sql += ", ";
-          oss_var_g << var_g;
-        sql += oss_var_g.str();
-        sql += ", ";
-          oss_var_b << var_b;
-        sql += oss_var_b.str();
-        sql += ", ";
-          oss_var_h << var_h;
-        sql += oss_var_h.str();
-        sql += ", ";
-          oss_var_s << var_s;
-        sql += oss_var_s.str();
-        sql += ", ";
-          oss_var_v << var_v;
-        sql += oss_var_v.str();
-        //ctrl + mal + :
-      sql+=");";
-      }
 
 
-    
-  }
+      //nbContours, isPortrait, nbfaces, dominant_color, global_hue, global_saturation, global_lightness, 
+      //var_h, var_s, var_v, mean_red, mean_green, mean_blue, var_red, var_green, var_blue
+      xx << nbContours, isPortrait, nbPers,  icolor, h, s, v, var_h, var_s, var_v, r, g, b, var_r, var_g, var_b;
+      //WARNING: add isPortrait & nbfaces later with value 1 minimum
 
-
-}
-
-
-
-
-
-//////////////////////////////////////////////////////////////////////////////////////////////
-int main(int argc, char **argv)
-{
-  if(argc < 2){
-    std::cerr << "usage : " << argv[0] << " image_1.jpg ... image_n.jpg" << std::endl;
-    std::cerr << "or : " << argv[0] << " dirname/*.jpg" << std::endl;
-    exit(0);
-  }
-
-  sqlite3 *db;
-  std::string sql;
-  int rc;
-
-
-  // Open database 
-  char* db_path = (char*)"../db/database_images"; 
-
-   rc = sqlite3_open(db_path, &db);
-   if( rc ){
-      fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(db));
-      exit(0);
-   }else{
-      //fprintf(stdout, "Opened database successfully\n");
-   }
-
-  //charge les images pour les analyser et preparer la requete sql
-  loadImages(argc, argv, sql, db);
-
-   // Execute SQL statement 
-  
-   std::string str;
-   const char * query = sql.c_str();
-   //std::cout << sql << std::endl;
-   char* zErrMsg = 0;
-   rc = sqlite3_exec(db, query, callback, 0, &zErrMsg);
-   if( rc != SQLITE_OK ){
-      fprintf(stderr, "SQL error: %s\n", zErrMsg);
-      sqlite3_free(zErrMsg);
-   }else{//fprintf(stdout, "Table insert successfully\n");
-   }
-
-  sqlite3_close(db);
-
-
-  //saveJPG(result,"output/result.jpg");
-
-
-
-cvWaitKey(0);
-      cout << "lel" << endl;
-
-  return 0;
+  return 1;
 }

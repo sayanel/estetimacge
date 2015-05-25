@@ -4,17 +4,23 @@ LIB      = -ljpeg -lsqlite3
 INCLUDES = -I ~/eigen/
 CXXFLAGS += $(INCLUDES)
 
-OBJ      = ImageException.o Image.o ImageRGB.o ioJPG.o exif.o photo.o main.o 
+CFLAGS = `pkg-config --cflags opencv`
+LIBS = `pkg-config --libs opencv`
+
+OBJ      = ImageException.o Image.o ImageRGB.o ioJPG.o exif.o photo.o faceDetector.o contourDetector.o main.o 
 RM       = rm -f
-BIN      = estetimacge
+BIN      = analyse
 DIRNAME  = $(shell basename $$PWD)
 BACKUP   = $(shell date +`basename $$PWD`-%m.%d.%H.%M.tgz)
 STDNAME  = $(DIRNAME).tgz
 
+
+
+
 all : $(BIN)
 
 $(BIN) : $(OBJ)
-	$(CXX) $(CXXFLAGS) $(OBJ) $(LIB) $(INCLUDES)  -o $(BIN)
+	$(CXX) $(CXXFLAGS) $(XFLAGS) $(OBJ) $(LIBS) $(LIB) $(INCLUDES)  -o $(BIN)
 	@echo "--------------------------------------------------------------"
 	@echo "                 to execute type: ./$(BIN) &"
 	@echo "--------------------------------------------------------------"
@@ -45,12 +51,22 @@ exif.o : exif.cpp exif.h
 	@echo "done..."
 
 photo.o : photo.cpp photo.hpp
-	@echo "compile main"
+	@echo "compile photo"
+	$(CXX) $(CXXFLAGS) -c $<  
+	@echo "done..."
+
+faceDetector.o : detector/faceDetector.cpp detector/include/faceDetector.hpp
+	@echo "compile faceDetector"
+	$(CXX) $(CXXFLAGS) -c $<  
+	@echo "done..."
+
+contourDetector.o : detector/contourDetector.cpp detector/include/contourDetector.hpp
+	@echo "compile contourDetector"
 	$(CXX) $(CXXFLAGS) -c $<  
 	@echo "done..."
 
 
-main.o : main.cpp exif.o ImageRGB.o exif.o ioJPG.o photo.o
+main.o : main.cpp exif.o ImageRGB.o exif.o ioJPG.o photo.o faceDetector.o contourDetector.o
 	@echo "compile main"
 	$(CXX) $(CXXFLAGS) -c $<  
 	@echo "done..."
